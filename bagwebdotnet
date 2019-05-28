@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# TODO: make sure wget is installed
+
+url=$1
+name=$2
+date=`date '+%Y-%m-%d'`
+working_dir=`pwd`
+bag_dir=$working_dir/$name
+log=$working_dir/$name.log
+
+mkdir $bag_dir
+cd $bag_dir
+
+echo
+echo "Crawling $url"
+wget -H --domains=omeka.net,ajax.googleapis.com,fonts.googleapis.com,s3.amazonaws.com --no-host-directories --output-file $log --warc-file $name --mirror --page-requisites --html-extension --convert-links --wait 1 --execute robots=off --no-parent $url 2>/dev/null
+
+mirror_dir=`ls -d */`
+mirror_dir=${mirror_dir%/} # strip trailing slash
+tar cfz $mirror_dir.tar.gz $mirror_dir
+rm -rf $mirror_dir
+
+echo
+echo "Finished, see $log for details."
+echo
+echo "You may want to record additional provenance in $bag_dir/bag-info.txt"
+echo
+
